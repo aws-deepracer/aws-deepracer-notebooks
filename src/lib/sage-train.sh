@@ -1,5 +1,5 @@
 #!/bin/bash
-
+  
 echo "Starting sage-train.sh"
 
 set -e

@@ -1,21 +1,20 @@
-import copy
 import threading
-
-import markov.gazebo_tracker.constants as consts
+from markov.log_handler.deepracer_exceptions import GenericRolloutException
+import copy
 import rospy
+
 from deepracer_msgs.srv import GetModelStates
 from gazebo_msgs.srv import GetModelStateResponse
-from markov.gazebo_tracker.abs_tracker import AbstractTracker
-from markov.log_handler.deepracer_exceptions import GenericRolloutException
-from markov.rospy_wrappers import ServiceProxyWrapper
 from markov.track_geom.constants import GET_MODEL_STATES
+from markov.rospy_wrappers import ServiceProxyWrapper
+from markov.gazebo_tracker.abs_tracker import AbstractTracker
+import markov.gazebo_tracker.constants as consts
 
 
 class GetModelStateTracker(AbstractTracker):
     """
     GetModelState Tracker class
     """
-
     _instance_ = None
 
     @staticmethod
@@ -40,7 +39,8 @@ class GetModelStateTracker(AbstractTracker):
         GetModelStateTracker._instance_ = self
         super(GetModelStateTracker, self).__init__(priority=consts.TrackerPriority.HIGH)
 
-    def get_model_state(self, model_name, relative_entity_name, blocking=False, auto_sync=True):
+    def get_model_state(self, model_name, relative_entity_name, blocking=False,
+                        auto_sync=True):
         """
         Return model state of given model name based on given relative entity
 
@@ -88,7 +88,8 @@ class GetModelStateTracker(AbstractTracker):
         """
         if self.model_names:
             with self.lock:
-                res = self._get_model_states(self.model_names, self.relative_entity_names)
+                res = self._get_model_states(self.model_names,
+                                             self.relative_entity_names)
                 if res.success:
                     for model_state, status in zip(res.model_states, res.status):
                         if status:
@@ -96,3 +97,19 @@ class GetModelStateTracker(AbstractTracker):
                             relative_entity_name = model_state.reference_frame
                             key = (model_name, relative_entity_name)
                             self.model_map[key] = model_state
+
+    def remove(self, model_name, relative_entity_name=""):
+        """
+        Remove model name with relative entity name from being updated in
+        model state tracker
+
+        Args:
+            model_name (str): name of the model
+            relative_entity_name (str): relative entity name
+        """
+        with self.lock:
+            key = (model_name, relative_entity_name)
+            if self.model_map and key in self.model_map:
+                self.model_map.pop(key)
+                self.model_names = [key[0] for key in self.model_map]
+                self.relative_entity_names = [key[1] for key in self.model_map]

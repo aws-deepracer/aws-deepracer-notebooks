@@ -1,10 +1,10 @@
 import copy
-import logging
 import threading
+import logging
 
+from markov.log_handler.deepracer_exceptions import GenericRolloutException
 from markov.gazebo_tracker.abs_tracker import AbstractTracker
 from markov.gazebo_tracker.trackers.get_model_state_tracker import GetModelStateTracker
-from markov.log_handler.deepracer_exceptions import GenericRolloutException
 from markov.log_handler.logger import Logger
 
 LOG = Logger(__name__, logging.INFO).get_logger()
@@ -14,7 +14,6 @@ class CameraManager(AbstractTracker):
     """
     Camera Manager class that manages multiple camera
     """
-
     _instance_ = None
 
     @staticmethod
@@ -55,7 +54,7 @@ class CameraManager(AbstractTracker):
             camera (object): Camera object
             namespace (str): namespace
         """
-        if not namespace or namespace == "*":
+        if not namespace or namespace == '*':
             raise GenericRolloutException("namespace must be provided and '*' is not allowed.")
         with self.lock:
             if namespace not in self.camera_namespaces:
@@ -63,7 +62,7 @@ class CameraManager(AbstractTracker):
             self.camera_namespaces[namespace].add(camera)
         LOG.info("[CameraManager]: Added %s to camera_namespaces %s", camera, namespace)
 
-    def remove(self, camera, namespace="*"):
+    def remove(self, camera, namespace='*'):
         """Remove the camera in given namespace from manager.
         - namespace '*' will try to remove given camera from every namespaces
 
@@ -72,14 +71,15 @@ class CameraManager(AbstractTracker):
             namespace (str): namespace
         """
         with self.lock:
-            if namespace == "*":
+            if namespace == '*':
                 for cur_namespace in self.camera_namespaces:
                     self.camera_namespaces[cur_namespace].discard(camera)
             else:
-                self.camera_namespaces[namespace].discard(camera)
+                if namespace in self.camera_namespaces:
+                    self.camera_namespaces[namespace].discard(camera)
         LOG.info("[CameraManager]: Removed %s from camera_namespaces %s", camera, namespace)
 
-    def reset(self, car_pose, namespace="*"):
+    def reset(self, car_pose, namespace='*'):
         """Reset camera pose on given namespace
         - namespace '*' will reset camera in every namespaces
 
@@ -88,13 +88,14 @@ class CameraManager(AbstractTracker):
             namespace (str): namespace
         """
         with self.lock:
-            if namespace == "*":
+            if namespace == '*':
                 for cur_namespace in self.camera_namespaces:
                     for camera in self.camera_namespaces[cur_namespace]:
                         camera.reset_pose(car_pose)
             else:
-                for camera in self.camera_namespaces[namespace]:
-                    camera.reset_pose(car_pose)
+                if namespace in self.camera_namespaces:
+                    for camera in self.camera_namespaces[namespace]:
+                        camera.reset_pose(car_pose)
 
     def update_tracker(self, delta_time, sim_time):
         """
@@ -108,18 +109,19 @@ class CameraManager(AbstractTracker):
             camera_name_space = copy.copy(self.camera_namespaces)
             for namespace in camera_name_space:
                 car_model_state = GetModelStateTracker.get_instance().get_model_state(namespace, "")
-                self._update(
-                    car_pose=car_model_state.pose, delta_time=delta_time, namespace=namespace
-                )
+                self._update(car_pose=car_model_state.pose,
+                             delta_time=delta_time,
+                             namespace=namespace)
 
-    def _update(self, car_pose, delta_time, namespace="*"):
+    def _update(self, car_pose, delta_time, namespace='*'):
         """Update camera with state and delta_time
         - namespace '*' will update camera in every namespaces
         """
-        if namespace == "*":
+        if namespace == '*':
             for cur_namespace in self.camera_namespaces:
                 for camera in self.camera_namespaces[cur_namespace]:
                     camera.update_pose(car_pose, delta_time)
         else:
-            for camera in self.camera_namespaces[namespace]:
-                camera.update_pose(car_pose, delta_time)
+            if namespace in self.camera_namespaces:
+                for camera in self.camera_namespaces[namespace]:
+                    camera.update_pose(car_pose, delta_time)

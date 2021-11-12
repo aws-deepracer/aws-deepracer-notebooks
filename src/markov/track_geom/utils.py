@@ -1,12 +1,11 @@
-"""This module should house utility methods for the track data classes"""
+'''This module should house utility methods for the track data classes'''
 import bisect
-import math
-
 import numpy as np
-from markov.track_geom.constants import HIDE_POS_DELTA, HIDE_POS_OFFSET, START_POS_OFFSET
+import math
+from markov.track_geom.constants import START_POS_OFFSET, HIDE_POS_OFFSET, HIDE_POS_DELTA
 
 
-# The order of rotation applied: roll -> pitch -> yaw
+# The order of rotation applied: yaw -> pitch -> roll
 def euler_to_quaternion(roll=0, pitch=0, yaw=0):
     # Abbreviations for the various angular functions
     cy = math.cos(yaw * 0.5)
@@ -26,7 +25,7 @@ def euler_to_quaternion(roll=0, pitch=0, yaw=0):
 
 
 def quaternion_to_euler(x, y, z, w):
-    """convert quaternion x, y, z, w to euler angle roll, pitch, yaw
+    '''convert quaternion x, y, z, w to euler angle roll, pitch, yaw
 
     Args:
         x: quaternion x
@@ -37,7 +36,7 @@ def quaternion_to_euler(x, y, z, w):
     Returns:
         Tuple: (roll, pitch, yaw) tuple
 
-    """
+    '''
     # roll (x-axis rotation)
     sinr_cosp = 2.0 * (w * x + y * z)
     cosr_cosp = 1.0 - 2.0 * (x * x + y * y)
@@ -72,7 +71,7 @@ def inverse_quaternion(q, threshold=0.000001):
 
 
 def apply_orientation(q, v):
-    """This function is used to rotate a vector in the oriention of the given quternion.
+    """ This function is used to rotate a vector in the oriention of the given quternion.
 
     This function assumes that v is a homogeneous quternion. That is the real part is zero.
     The complete explanation can be found in the link
@@ -111,22 +110,16 @@ def apply_orientation(q, v):
     b1, c1, d1, a1 = q
     b2, c2, d2 = v[0], v[1], v[2]
 
-    a1_sq = a1 ** 2
-    b1_sq = b1 ** 2
-    c1_sq = c1 ** 2
-    d1_sq = d1 ** 2
+    a1_sq = a1**2
+    b1_sq = b1**2
+    c1_sq = c1**2
+    d1_sq = d1**2
 
-    return np.array(
-        [
-            b2 * (-c1_sq - d1_sq + b1_sq + a1_sq)
-            + 2 * (-(a1 * c2 * d1) + (b1 * c1 * c2) + (b1 * d1 * d2) + (a1 * c1 * d2)),
-            c2 * (c1_sq - d1_sq + a1_sq - b1_sq)
-            + 2 * ((a1 * b2 * d1) + (b1 * b2 * c1) + (c1 * d1 * d2) - (a1 * b1 * d2)),
-            d2 * (-c1_sq + d1_sq + a1_sq - b1_sq)
-            + 2 * ((a1 * b1 * c2) + (b1 * b2 * d1) - (a1 * b2 * c1) + (c1 * c2 * d1)),
-        ]
-    )
-
+    return np.array([
+        b2*(-c1_sq - d1_sq + b1_sq + a1_sq) + 2*(-(a1*c2*d1) + (b1*c1*c2) + (b1*d1*d2) + (a1*c1*d2)),
+        c2*( c1_sq - d1_sq + a1_sq - b1_sq) + 2*( (a1*b2*d1) + (b1*b2*c1) + (c1*d1*d2) - (a1*b1*d2)),
+        d2*(-c1_sq + d1_sq + a1_sq - b1_sq) + 2*( (a1*b1*c2) + (b1*b2*d1) - (a1*b2*c1) + (c1*c2*d1))
+    ])
 
 def find_prev_next(a, x):
     next_index = bisect.bisect_right(a, x)
@@ -141,14 +134,14 @@ def find_prev_next(a, x):
 def pose_distance(pose_a, pose_b):
     p_a = pose_a.position
     p_b = pose_b.position
-    return math.sqrt((p_b.x - p_a.x) ** 2 + (p_b.y - p_a.y) ** 2 + (p_b.z - p_a.z) ** 2)
+    return math.sqrt((p_b.x - p_a.x)**2 + (p_b.y - p_a.y)**2 + (p_b.z - p_a.z)**2)
 
 
 def get_start_positions(race_car_num):
     return [-START_POS_OFFSET * idx for idx in range(race_car_num)]
 
 
-def get_hide_positions(race_car_num):
+def get_hide_positions(race_car_num=1):
     """Generate hide positions for cars what will be outside of the race track environment.
        So that idle cars are not visible to customers.
 
@@ -159,6 +152,4 @@ def get_hide_positions(race_car_num):
         list: List of hiding positions.
     """
     # TODO: Maybe implement some logic to make sure the park postion is always outside of the race track
-    return [
-        (-(HIDE_POS_OFFSET + HIDE_POS_DELTA * idx), HIDE_POS_OFFSET) for idx in range(race_car_num)
-    ]
+    return [(-(HIDE_POS_OFFSET + HIDE_POS_DELTA * idx), HIDE_POS_OFFSET) for idx in range(race_car_num)]

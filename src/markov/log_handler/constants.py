@@ -1,4 +1,4 @@
-"""This module houses the constants for the log_handler package"""
+'''This module houses the constants for the log_handler package'''
 
 # Names of the exceptions, errors generated
 SIMAPP_SIMULATION_WORKER_EXCEPTION = "simulation_worker.exceptions"
@@ -125,6 +125,7 @@ FAULT_MAP = {
     97: "Unsupported minimum and maximum action space bounds for scaling values",
     98: "Action space bounds are incorrect while defining",
     99: "Error while getting action space in",
+    100: "Agents video editing metric cannot be larger than racecar info"
 }
 
 # New error yet to be mapped
@@ -135,3 +136,16 @@ ERROR_HANDLER_EXCEPTION_FAULT_CODE = "1"
 
 # Synchronization file used in exception_handler.py
 EXCEPTION_HANDLER_SYNC_FILE = "EXCEPTION_HANDLER_SYNC_FILE"
+
+# SageOnly jobs PID files
+SAGEONLY_SIMAPP_JOB_PID_FILE_PATH = "/opt/ml/simapp-job.pid"
+SAGEONLY_TRAINING_JOB_PID_FILE_PATH = "/opt/ml/training_worker.pid"
+SAGEONLY_PID_FILE_NOT_PRESENT_SLEEP_TIME = 30
+SAGEONLY_PID_FILE_NOT_PRESENT_TIME_OUT = 120
+CONDA_DEFAULT_ENV = "CONDA_DEFAULT_ENV"
+CONDA_ENV_NAME = "sagemaker_env"
+CLOUDWATCH_LOG_WORKER_SLEEP_TIME = 60  # 60 second
+LOG_FILE_MAX_LIMIT_BYTES = 1073741824  # 1 GB (Log file max size)
+NUM_CHARACTERS_IN_CW_LOG = 250000
+MAX_CLOUDWATCH_PUT_LOGS_BATCH_SIZE_BYTES = 1000000  # Hard limit of CW is 1,048,576 bytes
+MAX_CLOUDWATCH_LOG_EVENT_BATCH_LENGTH = 10000  # Hard limit of CW is 10000 bytes

@@ -1,9 +1,7 @@
 import abc
-
 from markov.visual_effects.effect_manager import EffectManager
-
 # Python 2 and 3 compatible Abstract class
-ABC = abc.ABCMeta("ABC", (object,), {})
+ABC = abc.ABCMeta('ABC', (object,), {})
 
 
 class AbstractEffect(ABC):
@@ -17,7 +15,6 @@ class AbstractEffect(ABC):
       - (_laze_init) is called only once at initial update call
     - detach -> [remove from effect_manager] -> on_detach
     """
-
     def __init__(self):
         self._is_init_called = False
 
@@ -71,4 +68,4 @@ class AbstractEffect(ABC):
         Args:
             delta_time (float): the change of time in second from last call
         """
-        raise NotImplementedError("Effect must implement this function")
+        raise NotImplementedError('Effect must implement this function')

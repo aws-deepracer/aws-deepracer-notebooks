@@ -3,14 +3,13 @@
 import abc
 
 # Python 2 and 3 compatible Abstract class
-ABC = abc.ABCMeta("ABC", (object,), {})
+ABC = abc.ABCMeta('ABC', (object,), {})
 
 
 class AbsFSMState(ABC):
     """
     Abstract FSM state class
     """
-
     def __repr__(self):
         """
         Leverages the __str__ method to describe the State.
@@ -43,9 +42,7 @@ class AbsFSMState(ABC):
                 return None, ret_val[1:]
             elif isinstance(ret_val[0], AbsFSMState):
                 return ret_val[0], ret_val[1:]
-        raise ValueError(
-            "Unexpected return type: {}. Expected return: (AbsFSMState, ...)".format(ret_val)
-        )
+        raise ValueError("Unexpected return type: {}. Expected return: (AbsFSMState, ...)".format(ret_val))
 
     @abc.abstractmethod
     def _execute(self, input_val):

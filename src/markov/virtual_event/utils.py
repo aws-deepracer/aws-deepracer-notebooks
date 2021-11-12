@@ -1,24 +1,48 @@
-"""This module prodives utils for virtual event."""
-import json
 import logging
+import json
 from datetime import datetime
-
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
-from markov.log_handler.constants import SIMAPP_EVENT_ERROR_CODE_500, SIMAPP_EVENT_SYSTEM_ERROR
-from markov.log_handler.deepracer_exceptions import GenericNonFatalException
 from markov.log_handler.logger import Logger
-from markov.virtual_event.constants import (
-    CAR_CONTROL_INPUT_SCHEMA,
-    RACER_INFO_JSON_SCHEMA,
-    TIME_FORMAT,
-    CarControlMode,
-    CarControlStatus,
-    CarControlTopic,
-    WebRTCCarControl,
-)
+from markov.log_handler.deepracer_exceptions import GenericNonFatalException
+from markov.log_handler.constants import (SIMAPP_EVENT_SYSTEM_ERROR,
+                                          SIMAPP_EVENT_ERROR_CODE_500)
+from markov.virtual_event.constants import (WebRTCCarControl,
+                                            CarControlTopic,
+                                            CAR_CONTROL_INPUT_SCHEMA,
+                                            TIME_FORMAT)
 
 LOG = Logger(__name__, logging.INFO).get_logger()
+
+
+class Struct(object):
+    """
+    Struct class
+    """
+    def __init__(self, my_dict):
+        """
+        Struct constructor by converting dict to Struct
+
+        Args:
+            my_dict (dict): dictionary that will be converted to class
+        """
+        for key in my_dict:
+            if isinstance(my_dict[key], dict):
+                setattr(self, key, Struct(my_dict[key]))
+            elif isinstance(my_dict[key], (list, tuple)):
+                raise Exception("[Struct]: type {} not implemented".format(type(my_dict[key])))
+            else:
+                setattr(self, key, my_dict[key])
+
+
+def is_str_in_list_format(my_str):
+    """
+    Returns:
+        bool: True if string in list format, False otherwise.
+              This function only check whether first char is "[" and
+              last char is "]"
+    """
+    return my_str and my_str[0] == "[" and my_str[-1] == "]"
 
 
 def validate_json_input(message_body, json_schema):
@@ -42,18 +66,14 @@ def validate_json_input(message_body, json_schema):
         # 1. it's the cloud platform team sending us the message and
         # we treat the cloud and the simapp as one internal system for deepracer.
         # 2. a contract is already defined with the cloud which we should honor.
-        raise GenericNonFatalException(
-            error_msg=error_msg,
-            error_code=SIMAPP_EVENT_ERROR_CODE_500,
-            error_name=SIMAPP_EVENT_SYSTEM_ERROR,
-        )
+        raise GenericNonFatalException(error_msg=error_msg,
+                                       error_code=SIMAPP_EVENT_ERROR_CODE_500,
+                                       error_name=SIMAPP_EVENT_SYSTEM_ERROR)
     except Exception as ex:
         error_msg = "[json validation] Something wrong when validating json format: {}.".format(ex)
-        raise GenericNonFatalException(
-            error_msg=error_msg,
-            error_code=SIMAPP_EVENT_ERROR_CODE_500,
-            error_name=SIMAPP_EVENT_SYSTEM_ERROR,
-        )
+        raise GenericNonFatalException(error_msg=error_msg,
+                                       error_code=SIMAPP_EVENT_ERROR_CODE_500,
+                                       error_name=SIMAPP_EVENT_SYSTEM_ERROR)
 
 
 def process_car_control_msg(message):
@@ -85,14 +105,10 @@ def process_car_control_msg(message):
         raise ex
     except Exception as ex:
         error_msg = "[webrtc msg process] Exception in processing \
-                    webrtc message: {}, {}".format(
-            message, ex
-        )
-        raise GenericNonFatalException(
-            error_msg=error_msg,
-            error_code=SIMAPP_EVENT_ERROR_CODE_500,
-            error_name=SIMAPP_EVENT_SYSTEM_ERROR,
-        )
+                    webrtc message: {}, {}".format(message, ex)
+        raise GenericNonFatalException(error_msg=error_msg,
+                                       error_code=SIMAPP_EVENT_ERROR_CODE_500,
+                                       error_name=SIMAPP_EVENT_SYSTEM_ERROR)
 
 
 def log_latency(msg_json):
@@ -105,6 +121,6 @@ def log_latency(msg_json):
     sent_time = datetime.fromtimestamp(epoch_sec)
     receive_time = datetime.utcnow()
     difference = receive_time - sent_time
-    LOG.info("[webrtc msg process] sent_time: %s", sent_time.strftime(TIME_FORMAT))
-    LOG.info("[webrtc msg process] receive_time: %s", receive_time.strftime(TIME_FORMAT))
+    LOG.info('[webrtc msg process] sent_time: %s', sent_time.strftime(TIME_FORMAT))
+    LOG.info('[webrtc msg process] receive_time: %s', receive_time.strftime(TIME_FORMAT))
     LOG.info("[webrtc msg process] message latency %s", difference)

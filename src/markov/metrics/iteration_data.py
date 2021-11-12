@@ -1,11 +1,9 @@
-""" Iteration data that exposes all the S3 Upload job parameter as property"""
-
-
+''' Iteration data that exposes all the S3 Upload job parameter as property'''
 class IterationData(object):
-    """Iteration data that exposes all the S3 Upload job parameter as property"""
-
+    """Iteration data that exposes all the S3 Upload job parameter as property
+    """
     def __init__(self, job_name, s3_bucket, s3_prefix, aws_region, local_file):
-        """IterationData params to upload to S3 bucket
+        """ IterationData params to upload to S3 bucket
         Arguments:
             job_name {[str]} -- [Job name of the file that should be uploaded to s3]
             s3_bucket {[str]} -- [S3 bucket where the job has to be uploaded]
@@ -21,7 +19,7 @@ class IterationData(object):
 
     @property
     def job_name(self):
-        """Job name property
+        """ Job name property
         Returns:
             [str] -- [job name of the s3 writer]
         """
@@ -29,7 +27,7 @@ class IterationData(object):
 
     @property
     def s3_bucket(self):
-        """S3 bucket for the job
+        """ S3 bucket for the job
         Returns:
             [str] -- [S3 bucket where the job has to be uploaded]
         """
@@ -37,7 +35,7 @@ class IterationData(object):
 
     @property
     def s3_prefix(self):
-        """S3 prefix for the job
+        """ S3 prefix for the job
         Returns:
             [str] -- [S3 prefix where the job has to be uploaded]
         """
@@ -45,7 +43,7 @@ class IterationData(object):
 
     @property
     def aws_region(self):
-        """S3 region for the job
+        """ S3 region for the job
         Returns:
             [str] -- [S3 region where the job has to be uploaded]
         """
@@ -53,7 +51,7 @@ class IterationData(object):
 
     @property
     def local_file(self):
-        """Local file that has to be uploaded to s3
+        """ Local file that has to be uploaded to s3
         Returns:
             [str] -- [Local file that has to be uploaded to s3]
         """
