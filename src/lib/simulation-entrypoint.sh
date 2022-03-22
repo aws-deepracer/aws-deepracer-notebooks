@@ -3,7 +3,6 @@
 # # aws_common ROS package used in kinesis is outdated and wants aws credentials
 # # in /home/robomaker//.aws/config location
 mkdir -p /root/.aws/
-cat ${AWS_CONFIG_FILE}
 ln -s ${AWS_CONFIG_FILE} /root/.aws/credentials
 
 # Sourcing all ROS packages

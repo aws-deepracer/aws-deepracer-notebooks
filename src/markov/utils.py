@@ -59,30 +59,22 @@ def get_boto_config():
     '''Returns a botocore config object which specifies the number of times to retry'''
     return botocore.config.Config(retries=dict(max_attempts=NUM_RETRIES), connect_timeout=CONNECT_TIMEOUT)
 
-def cancel_simulation_job(backoff_time_sec=1.0, max_retry_attempts=5):
-    """ros service call to cancel simulation job
-
-    Args:
-        backoff_time_sec(float): backoff time in seconds
-        max_retry_attempts (int): maximum number of retry
+def cancel_simulation_job():
+    """
+    Cancel running simulation job
     """
     import rospy
-    from robomaker_simulation_msgs.srv import Cancel
-    from markov.rospy_wrappers import ServiceProxyWrapper
-    requestCancel = ServiceProxyWrapper('/robomaker/job/cancel', Cancel)
-
-    try_count = 0
-    while True:
-        try_count += 1
-        response = requestCancel()
-        logger.info("cancel_simulation_job from ros service call response: {}".format(response.success))
-        if response and response.success:
-            time.sleep(ROBOMAKER_CANCEL_JOB_WAIT_TIME)
-            return
-        if try_count > max_retry_attempts:
-            simapp_exit_gracefully()
-        backoff_time = (pow(try_count, 2) + random.random()) * backoff_time_sec
-        time.sleep(backoff_time)
+    logger.info("Cancelling the current running simulation job")
+    simulation_job_arn = os.environ.get('AWS_ROBOMAKER_SIMULATION_JOB_ARN')
+    aws_region = rospy.get_param('AWS_REGION')
+    if simulation_job_arn:
+        logger.info("Found simulation job arn, cancelling the job")
+        session = boto3.session.Session()
+        robomaker_client = session.client('robomaker', region_name=aws_region)
+        robomaker_client.cancel_simulation_job(job=simulation_job_arn)
+        logger.info("Successfully cancelled the simulation job")
+    else:
+        logger.info("AWS_ROBOMAKER_SIMULATION_JOB_ARN environment variable not set. Failed cancellation.")
 
 def str2bool(flag):
     """ bool: convert flag to boolean if it is string and return it else return its initial bool value """

@@ -31,7 +31,7 @@ from markov.virtual_event.constants import (WebRTCCarControl, CarControlMode,
                                             CarControlStatus,
                                             CarControlTopic, WEBRTC_CAR_CTRL_FORMAT)
 from markov.visual_effects.effects.blink_effect import BlinkEffect
-from markov.constants import DEFAULT_PARK_POSITION, SIMAPP_VERSION_4
+from markov.constants import DEFAULT_PARK_POSITION, SIMAPP_VERSION_5
 from markov.gazebo_tracker.trackers.get_link_state_tracker import GetLinkStateTracker
 from markov.gazebo_tracker.trackers.get_model_state_tracker import GetModelStateTracker
 from markov.gazebo_tracker.trackers.set_model_state_tracker import SetModelStateTracker
@@ -83,7 +83,7 @@ class RolloutCtrl(AgentCtrlInterface, ObserverInterface, AbstractTracker):
         self._simapp_version_ = config_dict[const.ConfigParams.VERSION.value]
         if self._is_virtual_event:
             # If virtual event then override the simapp version to the latest version.
-            self._simapp_version_ = SIMAPP_VERSION_4
+            self._simapp_version_ = SIMAPP_VERSION_5
         # simapp_version speed scale
         self._wheel_radius_ = get_wheel_radius(self._simapp_version_)
         # Store the name of the agent used to set agents position on the track
@@ -771,6 +771,12 @@ class RolloutCtrl(AgentCtrlInterface, ObserverInterface, AbstractTracker):
             raise RewardFunctionError('Reward function exception {}'.format(ex))
         if math.isnan(reward) or math.isinf(reward):
             raise RewardFunctionError('{} returned as reward'.format(reward))
+        # We have a static validation already on proven supported range. We need to ensure the reward from customer
+        # reward function doesn't cause nan in the loss function.
+        # https://code.amazon.com/packages/AwsSilverstoneRwdFuncValidationImageInfrastructure/blobs/01b61782d2b4d846352b14e57b3122835bc1ed48/--/configuration/lib/reward_func_validator/test_reward_function.py#L283-L287
+        if not (-1e5 <= reward <= 1e5):
+            raise RewardFunctionError('Reward score out of range. Reward: {}, range: [-1e5, 1e5]'.format(reward))
+
         # transition to AgentPhase.PARK.value when episode complete and done condition is all
         if episode_status == EpisodeStatus.EPISODE_COMPLETE.value and \
                 self._done_condition == all:
