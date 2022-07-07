@@ -72,7 +72,8 @@ RUN pip install \
     gunicorn==20.0.4 \
     h5py==2.10.0 \
     pytest==5.4.1 \
-    pytest-cov==2.8.1
+    pytest-cov==2.8.1 \
+    protobuf==3.19.4
 
 RUN pip install https://storage.googleapis.com/intel-optimized-tensorflow/tensorflow-1.11.0-cp36-cp36m-linux_x86_64.whl
 
